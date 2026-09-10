@@ -15,6 +15,7 @@ SPEAKERS = ("aidar", "baya", "kseniya", "xenia", "eugene")
 DEFAULT_VOICE = os.getenv("TTS_DEFAULT_VOICE", "xenia")
 SAMPLE_RATE = int(os.getenv("TTS_SAMPLE_RATE", "48000"))
 NUM_THREADS = int(os.getenv("TTS_NUM_THREADS", "0"))
+TRANSLIT = os.getenv("TTS_TRANSLIT", "0").lower() in ("1", "true", "yes", "on")
 
 if NUM_THREADS > 0:
     torch.set_num_threads(NUM_THREADS)
@@ -23,6 +24,7 @@ logger = logging.getLogger("silero-tts")
 logging.basicConfig(level=logging.INFO)
 
 from silero import silero_tts
+from translit import transliterate_latin
 
 model, _ = silero_tts(language="ru", speaker="v5_ru")
 
@@ -58,6 +60,9 @@ def speak(req: SpeakRequest):
     text = req.text.strip()
     if not text:
         raise HTTPException(status_code=400, detail="empty text")
+
+    if TRANSLIT:
+        text = transliterate_latin(text)
 
     speaker = req.voice.strip() or DEFAULT_VOICE
     fell_back = speaker not in SPEAKERS
