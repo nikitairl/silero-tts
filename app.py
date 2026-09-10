@@ -61,8 +61,10 @@ def speak(req: SpeakRequest):
     if not text:
         raise HTTPException(status_code=400, detail="empty text")
 
+    logger.info("speak in : %r", req.text)
     if TRANSLIT:
         text = transliterate_latin(text)
+        logger.info("speak out: %r", text)
 
     speaker = req.voice.strip() or DEFAULT_VOICE
     fell_back = speaker not in SPEAKERS
