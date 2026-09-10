@@ -1,7 +1,6 @@
 import io
 import logging
 import os
-import re
 import wave
 
 import numpy as np
@@ -82,11 +81,6 @@ def speak(req: SpeakRequest):
         )
     except Exception as exc:
         logger.exception("apply_tts failed")
-        if isinstance(exc, ValueError) and not re.search(r"[а-яА-ЯёЁ]", text):
-            raise HTTPException(
-                status_code=422,
-                detail="text contains no Cyrillic; this engine is Russian-only",
-            ) from exc
         raise HTTPException(
             status_code=500, detail=f"{type(exc).__name__}: {exc}"
         ) from exc
