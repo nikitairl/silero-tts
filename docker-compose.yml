@@ -1,0 +1,17 @@
+services:
+  tts:
+    build: .
+    image: silero-tts-v5:latest
+    environment:
+      TTS_DEFAULT_VOICE: ${TTS_DEFAULT_VOICE:-xenia}
+      TTS_SAMPLE_RATE: ${TTS_SAMPLE_RATE:-48000}
+      TTS_NUM_THREADS: ${TTS_NUM_THREADS:-0}
+    ports:
+      - "${TTS_PORT:-5001}:5001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
