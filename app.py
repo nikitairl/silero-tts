@@ -1,5 +1,7 @@
 import io
+import logging
 import os
+import re
 import wave
 
 import numpy as np
@@ -16,6 +18,9 @@ NUM_THREADS = int(os.getenv("TTS_NUM_THREADS", "0"))
 
 if NUM_THREADS > 0:
     torch.set_num_threads(NUM_THREADS)
+
+logger = logging.getLogger("silero-tts")
+logging.basicConfig(level=logging.INFO)
 
 from silero import silero_tts
 
@@ -69,7 +74,15 @@ def speak(req: SpeakRequest):
             put_yo_homo=True,
         )
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+        logger.exception("apply_tts failed")
+        if isinstance(exc, ValueError) and not re.search(r"[а-яА-ЯёЁ]", text):
+            raise HTTPException(
+                status_code=422,
+                detail="text contains no Cyrillic; this engine is Russian-only",
+            ) from exc
+        raise HTTPException(
+            status_code=500, detail=f"{type(exc).__name__}: {exc}"
+        ) from exc
 
     wav = render_wav(audio, SAMPLE_RATE)
 
