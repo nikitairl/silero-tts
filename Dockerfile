@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
 COPY translit.py .
+COPY num2text.py .
 
 # Preload the v5_ru model so it is baked into the image (fast cold start).
 RUN python -c "from silero import silero_tts; silero_tts(language='ru', speaker='v5_ru')"
